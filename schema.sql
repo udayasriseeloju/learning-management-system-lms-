@@ -1,0 +1,85 @@
+-- Create Database
+CREATE DATABASE IF NOT EXISTS lms_db;
+USE lms_db;
+
+-- USERS
+CREATE TABLE Users (
+    UserID INT AUTO_INCREMENT PRIMARY KEY,
+    FullName VARCHAR(150) NOT NULL,
+    Email VARCHAR(150) UNIQUE NOT NULL,
+    Role ENUM('Admin','Instructor','Student') NOT NULL,
+    DateCreated DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- COURSES
+CREATE TABLE Courses (
+    CourseID INT AUTO_INCREMENT PRIMARY KEY,
+    CourseName VARCHAR(200) NOT NULL,
+    Description TEXT,
+    CreatedBy INT NOT NULL,
+    CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (CreatedBy) REFERENCES Users(UserID)
+);
+
+-- ENROLLMENTS
+CREATE TABLE Enrollments (
+    EnrollmentID INT AUTO_INCREMENT PRIMARY KEY,
+    UserID INT NOT NULL,
+    CourseID INT NOT NULL,
+    EnrolledAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(UserID, CourseID),
+    FOREIGN KEY (UserID) REFERENCES Users(UserID),
+    FOREIGN KEY (CourseID) REFERENCES Courses(CourseID)
+);
+
+-- MODULES
+CREATE TABLE Modules (
+    ModuleID INT AUTO_INCREMENT PRIMARY KEY,
+    CourseID INT NOT NULL,
+    ModuleTitle VARCHAR(200) NOT NULL,
+    ModuleOrder INT NOT NULL,
+    FOREIGN KEY (CourseID) REFERENCES Courses(CourseID)
+);
+
+-- LESSONS
+CREATE TABLE Lessons (
+    LessonID INT AUTO_INCREMENT PRIMARY KEY,
+    ModuleID INT NOT NULL,
+    LessonTitle VARCHAR(200) NOT NULL,
+    Content TEXT,
+    LessonOrder INT NOT NULL,
+    FOREIGN KEY (ModuleID) REFERENCES Modules(ModuleID)
+);
+
+-- ASSESSMENTS
+CREATE TABLE Assessments (
+    AssessmentID INT AUTO_INCREMENT PRIMARY KEY,
+    CourseID INT NOT NULL,
+    Title VARCHAR(200),
+    TotalMarks INT NOT NULL,
+    FOREIGN KEY (CourseID) REFERENCES Courses(CourseID)
+);
+
+-- SUBMISSIONS
+CREATE TABLE AssessmentSubmissions (
+    SubmissionID INT AUTO_INCREMENT PRIMARY KEY,
+    AssessmentID INT NOT NULL,
+    StudentID INT NOT NULL,
+    MarksObtained INT,
+    SubmittedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (AssessmentID) REFERENCES Assessments(AssessmentID),
+    FOREIGN KEY (StudentID) REFERENCES Users(UserID)
+);
+
+-- STUDENT PROGRESS
+CREATE TABLE StudentProgress (
+    ProgressID INT AUTO_INCREMENT PRIMARY KEY,
+    UserID INT NOT NULL,
+    LessonID INT NOT NULL,
+    IsCompleted BOOLEAN DEFAULT 0,
+    CompletedAt DATETIME NULL,
+    UNIQUE(UserID, LessonID),
+    FOREIGN KEY (UserID) REFERENCES Users(UserID),
+    FOREIGN KEY (LessonID) REFERENCES Lessons(LessonID)
+);
+
